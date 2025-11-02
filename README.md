@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Docs/banner.svg" alt="NetworkHealth Logo" width="600"/>
+  <img src="Docs/banner.png" alt="NetworkHealth Logo" width="600"/>
 </p>
 
 <h1 align="center">NetworkHealth</h1>
@@ -10,12 +10,12 @@ A Swift package for intelligent network quality monitoring with automatic adapta
 
 <p align="center">
   <a href="https://swift.org">
-    <img src="https://img.shields.io/badge/Swift-5.9+-orange.svg?logo=swift" alt="Swift 5.9+" />
+    <img src="https://img.shields.io/badge/Swift-6.1+-orange.svg?logo=swift" alt="Swift 6.1+" />
   </a>
   <a href="https://swift.org/package-manager/">
     <img src="https://img.shields.io/badge/SPM-compatible-green.svg?logo=swift" alt="SPM" />
   </a>
-  <img src="https://img.shields.io/badge/platforms-iOS%2015%2B%20%7C%20iPadOS%2015%2B-blue.svg" alt="Platforms" />
+  <img src="https://img.shields.io/badge/platforms-iOS%2017%2B%20%7C%20iPadOS%2017%2B-bluorange.svg" alt="Platforms" />
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-lightgrey.svg" alt="License" />
   </a>
@@ -72,7 +72,7 @@ if snapshot.isGoodQuality {
 // Real-time monitoring
 for await state in NetworkHealth.stream() {
     print("Quality: \(state.quality)")
-    
+
     if state.isDegradedQuality {
         adaptUIForLowQuality()
     }
@@ -84,7 +84,7 @@ for await state in NetworkHealth.stream() {
 ```swift
 struct NetworkStatusView: View {
     @State private var health = NetworkHealth.observable()
-    
+
     var body: some View {
         HStack {
             Circle()

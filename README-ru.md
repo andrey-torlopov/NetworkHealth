@@ -15,11 +15,15 @@ Swift пакет для интеллектуального мониторинг�
   <a href="https://swift.org/package-manager/">
     <img src="https://img.shields.io/badge/SPM-compatible-green.svg?logo=swift" alt="SPM" />
   </a>
-  <img src="https://img.shields.io/badge/platforms-iOS%2017%2B%20%7C%20iPadOS%2017%2B-blue.svg" alt="Платформы" />
+  <img src="https://img.shields.io/badge/platforms-iOS%2017%2B%20%7C%20iPadOS%2017%2B-orange.svg" alt="Платформы" />
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-lightgrey.svg" alt="Лицензия" />
   </a>
   <img src="https://img.shields.io/badge/concurrency-async%2Fawait%20%7C%20actors-purple.svg" alt="Конкурентность" />
+</p>
+
+<p align="center">
+  <a href="README.md">English version</a>
 </p>
 
 ## Обзор

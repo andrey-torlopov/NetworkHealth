@@ -1,0 +1,75 @@
+<svg width="1200" height="300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="300" fill="#1a1a2e"/>
+  
+  <!-- Gradient background -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="wifiGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00d9ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0099ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="300" fill="url(#grad1)"/>
+  
+  <!-- WiFi Icon -->
+  <g transform="translate(200, 150)">
+    <!-- Outer arc -->
+    <path d="M -60 0 Q -60 -50, -10 -50 Q 40 -50, 40 0" 
+          stroke="url(#wifiGrad)" stroke-width="8" fill="none" opacity="0.4"/>
+    
+    <!-- Middle arc -->
+    <path d="M -40 0 Q -40 -35, -5 -35 Q 30 -35, 30 0" 
+          stroke="url(#wifiGrad)" stroke-width="8" fill="none" opacity="0.6"/>
+    
+    <!-- Inner arc -->
+    <path d="M -20 0 Q -20 -20, 0 -20 Q 20 -20, 20 0" 
+          stroke="url(#wifiGrad)" stroke-width="8" fill="none" opacity="0.8"/>
+    
+    <!-- Center dot -->
+    <circle cx="0" cy="5" r="10" fill="#00d9ff"/>
+  </g>
+  
+  <!-- Title -->
+  <text x="400" y="130" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#ffffff">
+    NetworkHealth
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="400" y="180" font-family="Arial, sans-serif" font-size="28" fill="#00d9ff">
+    Intelligent Network Quality Monitoring
+  </text>
+  
+  <!-- Quality indicators -->
+  <g transform="translate(400, 240)">
+    <circle cx="0" cy="0" r="8" fill="#666666"/>
+    <circle cx="120" cy="0" r="8" fill="#ff4444"/>
+    <circle cx="240" cy="0" r="8" fill="#ffaa00"/>
+    <circle cx="360" cy="0" r="8" fill="#88ff00"/>
+    <circle cx="480" cy="0" r="8" fill="#00ff88"/>
+  </g>
+  
+  <!-- Features icons -->
+  <g transform="translate(950, 150)">
+    <!-- Speed icon -->
+    <circle cx="0" cy="-40" r="25" fill="#00d9ff" opacity="0.2"/>
+    <text x="0" y="-32" font-family="Arial, sans-serif" font-size="30" fill="#00d9ff" text-anchor="middle">⚡</text>
+    
+    <!-- Monitor icon -->
+    <circle cx="80" cy="-40" r="25" fill="#00ff88" opacity="0.2"/>
+    <text x="80" y="-32" font-family="Arial, sans-serif" font-size="30" fill="#00ff88" text-anchor="middle">📊</text>
+    
+    <!-- Actor icon -->
+    <circle cx="0" cy="40" r="25" fill="#ff88ff" opacity="0.2"/>
+    <text x="0" y="48" font-family="Arial, sans-serif" font-size="30" fill="#ff88ff" text-anchor="middle">🧵</text>
+    
+    <!-- Swift icon -->
+    <circle cx="80" cy="40" r="25" fill="#ffaa00" opacity="0.2"/>
+    <text x="80" y="48" font-family="Arial, sans-serif" font-size="30" fill="#ffaa00" text-anchor="middle">🚀</text>
+  </g>
+</svg>

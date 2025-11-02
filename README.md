@@ -21,6 +21,9 @@ A Swift package for intelligent network quality monitoring with automatic adapta
   </a>
   <img src="https://img.shields.io/badge/concurrency-async%2Fawait%20%7C%20actors-purple.svg" alt="Concurrency" />
 </p>
+<p align="center">
+  <a href="README-ru.md">Русская версия</a>
+</p>
 
 ## Overview
 
@@ -45,7 +48,7 @@ Add NetworkHealth to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "1.0.0")
+    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1")
 ]
 ```
 

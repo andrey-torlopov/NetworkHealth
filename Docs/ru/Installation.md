@@ -30,7 +30,7 @@ let package = Package(
         .iOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "1.0.0")
+        .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1")
     ],
     targets: [
         .target(
@@ -61,8 +61,8 @@ NetworkHealth имеет следующие зависимости, которы
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "1.0.0"),
-    .package(url: "https://github.com/yourusername/SpeedTestCore.git", from: "1.0.0")
+    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1"),
+    .package(url: "https://github.com/yourusername/SpeedTestCore.git", from: "0.0.3")
 ]
 ```
 
@@ -123,7 +123,7 @@ Task {
 
 ### Ошибка разрешения пакетов
 
-**Решение**: 
+**Решение**:
 1. Проверьте интернет-соединение
 2. Убедитесь, что URL репозитория корректен
 3. Попробуйте сбросить кэш пакетов в Xcode: **File → Packages → Reset Package Caches**

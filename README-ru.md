@@ -49,7 +49,7 @@ NetworkHealth предоставляет простой и интуитивны�
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "1.0.0")
+    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1")
 ]
 ```
 

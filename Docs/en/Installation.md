@@ -30,7 +30,7 @@ let package = Package(
         .iOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "1.0.0")
+        .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1")
     ],
     targets: [
         .target(
@@ -61,8 +61,8 @@ If you want to enable speed testing capabilities, you need to include SpeedTestC
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "1.0.0"),
-    .package(url: "https://github.com/yourusername/SpeedTestCore.git", from: "1.0.0")
+    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1"),
+    .package(url: "https://github.com/yourusername/SpeedTestCore.git", from: "0.0.3")
 ]
 ```
 
@@ -123,7 +123,7 @@ Planned support:
 
 ### Package Resolution Fails
 
-**Solution**: 
+**Solution**:
 1. Check your internet connection
 2. Verify the repository URL is correct
 3. Try resolving package versions in Xcode: **File → Packages → Reset Package Caches**

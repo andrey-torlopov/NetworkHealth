@@ -15,7 +15,7 @@ A Swift package for intelligent network quality monitoring with automatic adapta
   <a href="https://swift.org/package-manager/">
     <img src="https://img.shields.io/badge/SPM-compatible-green.svg?logo=swift" alt="SPM" />
   </a>
-  <img src="https://img.shields.io/badge/platforms-iOS%2017%2B%20%7C%20iPadOS%2017%2B-bluorange.svg" alt="Platforms" />
+  <img src="https://img.shields.io/badge/platforms-iOS%2017%2B%20%7C%20iPadOS%2017%2B-orange.svg" alt="Platforms" />
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-lightgrey.svg" alt="License" />
   </a>

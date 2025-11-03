@@ -1,7 +1,25 @@
 import Foundation
-import SpeedTestCore
 
-/// Adapter that bridges SpeedTestCore's SpeedTestManager to NetworkQualityChecker's protocols
+// IMPORTANT: This file is an EXAMPLE of how to integrate SpeedTestCore with NetworkHealth.
+// SpeedTestCore is NOT a dependency of NetworkHealth - it's optional.
+// You can use this adapter by:
+// 1. Adding SpeedTestCore as a dependency to YOUR app
+// 2. Copying this adapter into your project
+// 3. Uncommenting the imports and code below
+
+// Uncomment these lines when using SpeedTestCore:
+// import SpeedTestCore
+
+/// Example adapter that bridges SpeedTestCore's SpeedTestManager to NetworkHealth's SpeedTester protocol
+/// This demonstrates how to integrate any speed testing library with NetworkHealth.
+///
+/// USAGE IN YOUR PROJECT:
+/// 1. Add SpeedTestCore to your app's dependencies
+/// 2. Copy this file to your project
+/// 3. Uncomment all the code below
+/// 4. Use it like: `NetworkHealth.stream(speedTester: SpeedTestCoreAdapter(...))`
+
+/*
 public final class SpeedTestCoreAdapter: DetailedSpeedTester {
 
     // MARK: - Configuration
@@ -107,3 +125,4 @@ extension SpeedTestCoreAdapter {
         )
     }
 }
+*/

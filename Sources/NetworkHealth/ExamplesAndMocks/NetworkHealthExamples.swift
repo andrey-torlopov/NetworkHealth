@@ -1,10 +1,10 @@
 import Foundation
 import SwiftUI
-import Nevod
 
 // MARK: - Example 1: Stream Mode (Continuous Monitoring)
 
 /// Example: Basic network monitoring without speed tests
+/// This monitors only the connection type (WiFi, LTE, 5G, etc.)
 func example1_BasicStreamMonitoring() async {
     for await state in NetworkHealth.stream() {
         print("Quality: \(state.quality.description)")
@@ -21,12 +21,15 @@ func example1_BasicStreamMonitoring() async {
     }
 }
 
-/// Example: Stream with periodic speed tests
-func example2_StreamWithSpeedTests(networkProvider: NetworkProvider) async {
+/// Example: Stream with periodic speed tests using MockSpeedTester
+/// This demonstrates how to inject a speed tester to get REAL speed measurements
+func example2_StreamWithSpeedTests() async {
+    // Create a mock tester that simulates excellent WiFi
+    let speedTester = MockSpeedTester.excellentWiFi
+
     for await state in NetworkHealth.stream(
-        includeSpeedTests: true,
-        speedTestInterval: 60, // Test every 60 seconds
-        networkProvider: networkProvider
+        speedTester: speedTester,
+        speedTestInterval: 60 // Test every 60 seconds
     ) {
         print("Quality: \(state.quality.description)")
 
@@ -37,6 +40,27 @@ func example2_StreamWithSpeedTests(networkProvider: NetworkProvider) async {
         if let latency = state.latency {
             print("Latency: \(latency)ms")
         }
+    }
+}
+
+/// Example: Using different mock configurations to simulate various conditions
+func example2b_SimulateNetworkConditions() async {
+    // You can use different testers:
+    // - MockSpeedTester.poor2G
+    // - MockSpeedTester.excellent5G
+    // - RandomMockSpeedTester for variable conditions
+
+    let randomTester = RandomMockSpeedTester(
+        latencyRange: 20...200,
+        downloadRange: 1...100,
+        uploadRange: 1...50
+    )
+
+    for await state in NetworkHealth.stream(
+        speedTester: randomTester,
+        speedTestInterval: 30
+    ) {
+        print("Current quality: \(state.quality)")
     }
 }
 
@@ -96,11 +120,15 @@ func example3_QuickSnapshot() async {
 }
 
 /// Example: Detailed snapshot with speed test
-func example4_DetailedSnapshot(networkProvider: NetworkProvider) async {
+func example4_DetailedSnapshot() async {
     do {
         print("Running speed test...")
+
+        // Use mock tester for demonstration
+        let speedTester = MockSpeedTester.goodLTE
+
         let snapshot = try await NetworkHealth.detailedSnapshot(
-            networkProvider: networkProvider
+            speedTester: speedTester
         )
 
         print("Quality: \(snapshot.quality.description)")
@@ -204,8 +232,9 @@ struct NetworkStatusView: View {
 
 /// Example: SwiftUI View with speed testing
 struct NetworkSpeedView: View {
+    // Create a mock tester for demonstration
     @State private var health = NetworkHealth.observable(
-        includeSpeedTests: true,
+        speedTester: MockSpeedTester.goodLTE,
         speedTestInterval: 60
     )
 

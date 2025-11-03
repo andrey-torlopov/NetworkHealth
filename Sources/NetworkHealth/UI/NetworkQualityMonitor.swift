@@ -1,6 +1,5 @@
 import Foundation
 import Observation
-import Nevod
 
 /// SwiftUI-friendly wrapper for NetworkHealthCoordinator
 /// Provides immediate, synchronous access to network quality state
@@ -143,21 +142,18 @@ public final class NetworkQualityMonitor: @unchecked Sendable {
 
 public extension NetworkQualityMonitor {
 
-    /// Creates a monitor with speed testing enabled
+    /// Creates a monitor with custom speed testing
     /// - Parameters:
-    ///   - testMode: Speed test mode
+    ///   - speedTester: Speed tester implementation
     ///   - interval: Minimum interval between tests
-    ///   - networkProvider: Network provider for speed testing
     /// - Returns: Configured monitor
     static func withSpeedTest(
-        testMode: SpeedTestCoreAdapter.TestMode = .quick,
-        interval: TimeInterval = 120,
-        networkProvider: NetworkProvider
+        speedTester: any SpeedTester,
+        interval: TimeInterval = 120
     ) -> NetworkQualityMonitor {
-        let checker = NetworkHealthCoordinator.withSpeedTest(
-            testMode: testMode,
-            interval: interval,
-            networkProvider: networkProvider
+        let checker = NetworkHealthCoordinator.custom(
+            speedTester: speedTester,
+            interval: interval
         )
         return NetworkQualityMonitor(checker: checker)
     }

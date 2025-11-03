@@ -1,6 +1,4 @@
 import Foundation
-import Nevod
-import SpeedTestCore
 
 // MARK: - Factory Methods
 
@@ -10,28 +8,6 @@ public extension NetworkHealthCoordinator {
     /// - Returns: NetworkHealthCoordinator configured for connection type monitoring only
     static func basic() -> NetworkHealthCoordinator {
         NetworkHealthCoordinator()
-    }
-
-    /// Creates a network quality checker with speed testing enabled
-    /// - Parameters:
-    ///   - testMode: Speed test mode (quick, standard, or full)
-    ///   - interval: Minimum interval between speed tests in seconds (default: 120)
-    ///   - networkProvider: NetworkProvider for speed testing (required)
-    /// - Returns: NetworkHealthCoordinator configured with speed testing
-    static func withSpeedTest(
-        testMode: SpeedTestCoreAdapter.TestMode = .quick,
-        interval: TimeInterval = 120,
-        networkProvider: NetworkProvider
-    ) -> NetworkHealthCoordinator {
-        let speedTestManager = SpeedTestManager(networkProvider: networkProvider)
-        let adapter = SpeedTestCoreAdapter(manager: speedTestManager, testMode: testMode)
-
-        let configuration = Configuration(
-            speedTester: adapter,
-            minimumSpeedCheckInterval: interval
-        )
-
-        return NetworkHealthCoordinator(configuration: configuration)
     }
 
     /// Creates a network quality checker with custom configuration

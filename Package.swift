@@ -16,16 +16,13 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "git@github.com:andrey-torlopov/SpeedTestCore.git", from: "0.0.1"),
-        .package(url: "git@github.com:andrey-torlopov/Nevod.git", from: "0.0.2")
+        // No external dependencies - NetworkHealth is now atomic!
+        // Speed testers can be injected via the SpeedTester protocol
     ],
     targets: [
         .target(
             name: "NetworkHealth",
-            dependencies: [
-                .product(name: "SpeedTestCore", package: "SpeedTestCore"),
-                .product(name: "Nevod", package: "Nevod"),
-            ]
+            dependencies: []
         ),
         .testTarget(
             name: "NetworkHealthTests",

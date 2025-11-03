@@ -1,5 +1,4 @@
 import Foundation
-import Nevod
 import Network
 
 /// Coordinates network quality monitoring by combining network path monitoring,

@@ -1,5 +1,4 @@
  import Foundation
-import Nevod
 
 /// Simplified facade for network quality monitoring.
 /// Provides three main usage patterns:
@@ -29,9 +28,8 @@ public enum NetworkHealth {
     /// This is the simplest way to track network changes in real-time.
     ///
     /// - Parameters:
-    ///   - includeSpeedTests: Whether to perform periodic speed tests (default: false)
+    ///   - speedTester: Optional speed tester implementation (default: nil, no speed tests)
     ///   - speedTestInterval: Minimum interval between speed tests in seconds (default: 120)
-    ///   - networkProvider: Optional network provider for speed testing
     /// - Returns: AsyncStream that yields network state updates
     ///
     /// Example:
@@ -42,9 +40,10 @@ public enum NetworkHealth {
     ///     print("Connection: \(state.connectionType)")
     /// }
     ///
-    /// // With speed testing
+    /// // With speed testing (inject any SpeedTester implementation)
+    /// let myTester = MyCustomSpeedTester()
     /// for await state in NetworkHealth.stream(
-    ///     includeSpeedTests: true,
+    ///     speedTester: myTester,
     ///     speedTestInterval: 60
     /// ) {
     ///     if let speed = state.downloadSpeedMbps {
@@ -53,14 +52,12 @@ public enum NetworkHealth {
     /// }
     /// ```
     public static func stream(
-        includeSpeedTests: Bool = false,
-        speedTestInterval: TimeInterval = 120,
-        networkProvider: NetworkProvider? = nil
+        speedTester: (any SpeedTester)? = nil,
+        speedTestInterval: TimeInterval = 120
     ) -> AsyncStream<NetworkHealthState> {
         let checker = createChecker(
-            includeSpeedTests: includeSpeedTests,
-            speedTestInterval: speedTestInterval,
-            networkProvider: networkProvider
+            speedTester: speedTester,
+            speedTestInterval: speedTestInterval
         )
 
         return AsyncStream { continuation in
@@ -108,15 +105,16 @@ public enum NetworkHealth {
     /// Performs a detailed one-time check including speed test.
     /// This takes longer (several seconds) but provides accurate measurements.
     ///
-    /// - Parameter networkProvider: Network provider for speed testing
+    /// - Parameter speedTester: Speed tester implementation to use for measurements
     /// - Returns: Detailed snapshot with speed measurements
     /// - Throws: NetworkQualityError if measurement fails
     ///
     /// Example:
     /// ```swift
     /// do {
+    ///     let myTester = MyCustomSpeedTester()
     ///     let detailed = try await NetworkHealth.detailedSnapshot(
-    ///         networkProvider: myProvider
+    ///         speedTester: myTester
     ///     )
     ///     print("Latency: \(detailed.latency ?? 0)ms")
     ///     print("Download: \(detailed.downloadSpeedMbps ?? 0) Mbps")
@@ -125,12 +123,11 @@ public enum NetworkHealth {
     /// }
     /// ```
     public static func detailedSnapshot(
-        networkProvider: NetworkProvider
+        speedTester: any SpeedTester
     ) async throws -> NetworkQualitySnapshot {
-        let checker = NetworkHealthCoordinator.withSpeedTest(
-            testMode: .quick,
-            interval: 1,
-            networkProvider: networkProvider
+        let checker = NetworkHealthCoordinator.custom(
+            speedTester: speedTester,
+            interval: 1
         )
 
         // Give it a moment to initialize
@@ -148,9 +145,8 @@ public enum NetworkHealth {
     /// Use this when you need to bind network state to UI components.
     ///
     /// - Parameters:
-    ///   - includeSpeedTests: Whether to perform periodic speed tests (default: false)
+    ///   - speedTester: Optional speed tester implementation (default: nil, no speed tests)
     ///   - speedTestInterval: Minimum interval between speed tests in seconds (default: 120)
-    ///   - networkProvider: Optional network provider for speed testing
     /// - Returns: Observable monitor instance
     ///
     /// Example:
@@ -165,14 +161,12 @@ public enum NetworkHealth {
     /// }
     /// ```
     public static func observable(
-        includeSpeedTests: Bool = false,
-        speedTestInterval: TimeInterval = 120,
-        networkProvider: NetworkProvider? = nil
+        speedTester: (any SpeedTester)? = nil,
+        speedTestInterval: TimeInterval = 120
     ) -> NetworkQualityMonitor {
         let checker = createChecker(
-            includeSpeedTests: includeSpeedTests,
-            speedTestInterval: speedTestInterval,
-            networkProvider: networkProvider
+            speedTester: speedTester,
+            speedTestInterval: speedTestInterval
         )
         return NetworkQualityMonitor(checker: checker)
     }
@@ -253,219 +247,17 @@ public enum NetworkHealth {
     // MARK: - Private Helpers
 
     private static func createChecker(
-        includeSpeedTests: Bool,
-        speedTestInterval: TimeInterval,
-        networkProvider: NetworkProvider?
+        speedTester: (any SpeedTester)?,
+        speedTestInterval: TimeInterval
     ) -> NetworkHealthCoordinator {
-        if includeSpeedTests, let networkProvider = networkProvider {
-            return NetworkHealthCoordinator.withSpeedTest(
-                testMode: .quick,
-                interval: speedTestInterval,
-                networkProvider: networkProvider
+        if let speedTester = speedTester {
+            return NetworkHealthCoordinator.custom(
+                speedTester: speedTester,
+                interval: speedTestInterval
             )
         } else {
             return NetworkHealthCoordinator()
         }
-    }
-}
-
-// MARK: - NetworkHealthState
-
-/// Simplified state representation for NetworkHealth facade.
-/// Combines connection info, quality, and optional measurements.
-public struct NetworkHealthState: Sendable, Equatable {
-    /// Type of network connection (WiFi, LTE, 5G, etc.)
-    public let connectionType: ConnectionRawData
-
-    /// Overall network quality assessment
-    public let quality: NetworkQuality
-
-    /// Whether the connection is expensive (e.g., cellular with limited data)
-    public let isExpensive: Bool
-
-    /// Round-trip time (latency) in milliseconds (if available)
-    public let latency: Double?
-
-    /// Download speed in megabits per second (if available)
-    public let downloadSpeedMbps: Double?
-
-    /// Upload speed in megabits per second (if available)
-    public let uploadSpeedMbps: Double?
-
-    /// Whether the device is currently online
-    public var isOnline: Bool {
-        quality != .offline
-    }
-
-    /// Whether the connection quality is good enough for heavy operations
-    public var isGoodQuality: Bool {
-        quality >= .good
-    }
-
-    /// Whether the connection is degraded (poor or moderate)
-    public var isDegradedQuality: Bool {
-        quality == .poor || quality == .moderate
-    }
-
-    internal init(from state: NetworkHealthCoordinator.State, checker: NetworkHealthCoordinator?) {
-        self.connectionType = state.connectionType
-        self.quality = state.quality
-        self.isExpensive = state.isExpensive
-
-        // These would need to be exposed from checker if we want them
-        // For now, they're nil in basic streaming mode
-        self.latency = nil
-        self.downloadSpeedMbps = nil
-        self.uploadSpeedMbps = nil
-    }
-
-    public init(
-        connectionType: ConnectionRawData,
-        quality: NetworkQuality,
-        isExpensive: Bool,
-        latency: Double? = nil,
-        downloadSpeedMbps: Double? = nil,
-        uploadSpeedMbps: Double? = nil
-    ) {
-        self.connectionType = connectionType
-        self.quality = quality
-        self.isExpensive = isExpensive
-        self.latency = latency
-        self.downloadSpeedMbps = downloadSpeedMbps
-        self.uploadSpeedMbps = uploadSpeedMbps
-    }
-}
-
-// MARK: - OperationRequirement
-
-/// Predefined requirements for common operations.
-public enum OperationRequirement {
-    /// Web browsing, text messaging (Poor or better, any connection)
-    case basicBrowsing
-
-    /// Image loading, social media (Moderate or better, any connection)
-    case imageLoading
-
-    /// Video streaming, video calls (Good or better, any connection)
-    case videoStreaming
-
-    /// Large file downloads (Good or better, preferably WiFi)
-    case largeDownload
-
-    /// Large file uploads (Good or better, WiFi required)
-    case largeUpload
-
-    /// Custom requirements
-    case custom(minimumQuality: NetworkQuality, requireWiFi: Bool, allowExpensive: Bool)
-
-    internal func evaluate(state: NetworkHealthCoordinator.State) -> HealthCheckResult {
-        switch self {
-        case .basicBrowsing:
-            return evaluateBasicBrowsing(state: state)
-        case .imageLoading:
-            return evaluateImageLoading(state: state)
-        case .videoStreaming:
-            return evaluateVideoStreaming(state: state)
-        case .largeDownload:
-            return evaluateLargeDownload(state: state)
-        case .largeUpload:
-            return evaluateLargeUpload(state: state)
-        case .custom(let minQuality, let requireWiFi, let allowExpensive):
-            return evaluateCustom(
-                state: state,
-                minimumQuality: minQuality,
-                requireWiFi: requireWiFi,
-                allowExpensive: allowExpensive
-            )
-        }
-    }
-
-    private func evaluateBasicBrowsing(state: NetworkHealthCoordinator.State) -> HealthCheckResult {
-        if state.quality < .poor {
-            return HealthCheckResult(passed: false, reason: "Network is offline")
-        }
-        return HealthCheckResult(passed: true, reason: nil)
-    }
-
-    private func evaluateImageLoading(state: NetworkHealthCoordinator.State) -> HealthCheckResult {
-        if state.quality < .moderate {
-            return HealthCheckResult(passed: false, reason: "Network quality too low for image loading")
-        }
-        return HealthCheckResult(passed: true, reason: nil)
-    }
-
-    private func evaluateVideoStreaming(state: NetworkHealthCoordinator.State) -> HealthCheckResult {
-        if state.quality < .good {
-            return HealthCheckResult(passed: false, reason: "Network quality too low for video streaming")
-        }
-        return HealthCheckResult(passed: true, reason: nil)
-    }
-
-    private func evaluateLargeDownload(state: NetworkHealthCoordinator.State) -> HealthCheckResult {
-        if state.quality < .good {
-            return HealthCheckResult(passed: false, reason: "Network quality too low for large downloads")
-        }
-
-        if state.isExpensive && state.connectionType.isCellular {
-            return HealthCheckResult(
-                passed: true,
-                reason: "Warning: Using cellular data for large download"
-            )
-        }
-
-        return HealthCheckResult(passed: true, reason: nil)
-    }
-
-    private func evaluateLargeUpload(state: NetworkHealthCoordinator.State) -> HealthCheckResult {
-        if state.quality < .good {
-            return HealthCheckResult(passed: false, reason: "Network quality too low for large uploads")
-        }
-
-        if state.connectionType.isCellular {
-            return HealthCheckResult(passed: false, reason: "WiFi required for large uploads")
-        }
-
-        return HealthCheckResult(passed: true, reason: nil)
-    }
-
-    private func evaluateCustom(
-        state: NetworkHealthCoordinator.State,
-        minimumQuality: NetworkQuality,
-        requireWiFi: Bool,
-        allowExpensive: Bool
-    ) -> HealthCheckResult {
-        if state.quality < minimumQuality {
-            return HealthCheckResult(
-                passed: false,
-                reason: "Network quality below minimum (\(minimumQuality.description))"
-            )
-        }
-
-        if requireWiFi && state.connectionType.isCellular {
-            return HealthCheckResult(passed: false, reason: "WiFi required")
-        }
-
-        if !allowExpensive && state.isExpensive {
-            return HealthCheckResult(passed: false, reason: "Expensive connection not allowed")
-        }
-
-        return HealthCheckResult(passed: true, reason: nil)
-    }
-}
-
-// MARK: - HealthCheckResult
-
-/// Result of a network health check.
-public struct HealthCheckResult: Sendable {
-    /// Whether the check passed
-    public let passed: Bool
-
-    /// Optional reason for failure or warning message
-    public let reason: String?
-
-    public init(passed: Bool, reason: String?) {
-        self.passed = passed
-        self.reason = reason
     }
 }
 

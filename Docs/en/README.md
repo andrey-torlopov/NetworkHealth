@@ -20,7 +20,7 @@ NetworkHealth provides a simple, powerful API for monitoring network quality and
 - **Simple API** - Four intuitive usage patterns (Stream, Snapshot, Observable, Health Check)
 - **Quality Assessment** - Five-level quality scale from Offline to Excellent
 - **Connection Detection** - WiFi, Cellular (2G/3G/LTE/5G), Ethernet
-- **Speed Testing** - Optional integration with SpeedTestCore
+- **Speed Testing** - Protocol-based speed testing (implement `SpeedTester` protocol or use SpeedTestCore)
 - **Real-time Monitoring** - AsyncStream-based continuous updates
 - **SwiftUI Integration** - Observable wrapper for seamless UI updates
 - **Thread-Safe** - Actor-based architecture for safe concurrency

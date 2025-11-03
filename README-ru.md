@@ -34,7 +34,7 @@ NetworkHealth предоставляет простой и интуитивны�
 
 - 🌐 **Определение типа соединения** - WiFi, Cellular (2G/3G/LTE/5G), Ethernet
 - 📊 **Оценка качества** - Пятиуровневая шкала качества (от Offline до Excellent)
-- ⚡ **Тестирование скорости** - Опциональная интеграция со SpeedTestCore
+- ⚡ **Тестирование скорости** - Тестирование скорости на основе протокола (реализуйте протокол `SpeedTester` или используйте SpeedTestCore)
 - 📈 **Непрерывный мониторинг** - Обновления состояния сети в реальном времени через AsyncStream
 - 🎯 **Требования операций** - Предопределенные проверки для типичных операций
 - 💾 **История измерений** - Автоматическое сохранение снимков и статистика
@@ -163,7 +163,30 @@ actor DownloadManager {
 
 ## Тестирование скорости (опционально)
 
-NetworkHealth поддерживает опциональное тестирование скорости через протокол `SpeedTester`. Вы можете внедрить любую реализацию тестирования скорости:
+NetworkHealth поддерживает опциональное тестирование скорости через протокол `SpeedTester`. Вы можете реализовать свою собственную логику тестирования скорости или использовать существующие реализации, такие как SpeedTestCore.
+
+### Реализация собственного Speed Tester
+
+```swift
+import NetworkHealth
+
+struct MyCustomSpeedTester: SpeedTester {
+    func measureSpeed() async throws -> SpeedTestResult {
+        // Ваша собственная реализация
+        let latency = try await measureLatency()
+        let downloadSpeed = try await measureDownloadSpeed()
+        let uploadSpeed = try await measureUploadSpeed()
+        
+        return SpeedTestResult(
+            latency: latency,
+            downloadSpeedMbps: downloadSpeed,
+            uploadSpeedMbps: uploadSpeed
+        )
+    }
+}
+```
+
+### Использование Speed Tester
 
 ```swift
 // Используйте mock тестер для разработки/тестирования

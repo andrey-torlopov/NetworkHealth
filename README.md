@@ -33,7 +33,7 @@ NetworkHealth provides a simple, intuitive API for monitoring network quality an
 
 - 🌐 **Connection Detection** - WiFi, Cellular (2G/3G/LTE/5G), Ethernet
 - 📊 **Quality Assessment** - Five-level quality scale (Offline to Excellent)
-- ⚡ **Speed Testing** - Optional integration with SpeedTestCore
+- ⚡ **Speed Testing** - Protocol-based speed testing (implement `SpeedTester` protocol or use SpeedTestCore)
 - 📈 **Continuous Monitoring** - Real-time network state updates via AsyncStream
 - 🎯 **Operation Requirements** - Predefined checks for common operations
 - 💾 **Measurement History** - Automatic snapshot storage and statistics
@@ -162,7 +162,30 @@ actor DownloadManager {
 
 ## Speed Testing (Optional)
 
-NetworkHealth supports optional speed testing through the `SpeedTester` protocol. You can inject any speed testing implementation:
+NetworkHealth supports optional speed testing through the `SpeedTester` protocol. You can implement your own speed testing logic or use existing implementations like SpeedTestCore.
+
+### Implementing Custom Speed Tester
+
+```swift
+import NetworkHealth
+
+struct MyCustomSpeedTester: SpeedTester {
+    func measureSpeed() async throws -> SpeedTestResult {
+        // Your custom implementation
+        let latency = try await measureLatency()
+        let downloadSpeed = try await measureDownloadSpeed()
+        let uploadSpeed = try await measureUploadSpeed()
+        
+        return SpeedTestResult(
+            latency: latency,
+            downloadSpeedMbps: downloadSpeed,
+            uploadSpeedMbps: uploadSpeed
+        )
+    }
+}
+```
+
+### Using Speed Tester
 
 ```swift
 // Use a mock tester for development/testing

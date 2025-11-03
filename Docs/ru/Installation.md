@@ -21,16 +21,17 @@ NetworkHealth распространяется через Swift Package Manager.
 Добавьте NetworkHealth как зависимость в ваш файл `Package.swift`:
 
 ```swift
-// swift-tools-version: 5.9
+// swift-tools-version: 6.1
 import PackageDescription
 
 let package = Package(
     name: "YourPackage",
     platforms: [
-        .iOS(.v15)
+        .iOS(.v17),
+        .macOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1")
+        .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "1.0.0")
     ],
     targets: [
         .target(
@@ -43,45 +44,37 @@ let package = Package(
 
 ## Зависимости
 
-NetworkHealth имеет следующие зависимости, которые будут установлены автоматически:
+NetworkHealth имеет **НОЛЬ внешних зависимостей**! Это полностью автономная библиотека.
 
-### Обязательные зависимости
+### Встроенные зависимости
 - **Foundation** - Встроенный фреймворк (не требует внешних зависимостей)
 - **Network** - Встроенный фреймворк для NWPathMonitor (не требует внешних зависимостей)
+- **CoreTelephony** - Встроенный фреймворк для определения типа сотовой связи (только iOS)
 
-### Опциональные зависимости
-Если вы хотите использовать функции тестирования скорости:
+### Опциональное тестирование скорости
 
-- **SpeedTestCore** - Для измерения скорости сети
-- **Nevod** (Core) - Слой сетевого провайдера
+NetworkHealth поддерживает тестирование скорости через протокол `SpeedTester`. Вы можете использовать:
 
-## Установка для тестирования скорости
-
-Если вы хотите включить возможности тестирования скорости, вам нужно подключить SpeedTestCore:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1"),
-    .package(url: "https://github.com/yourusername/SpeedTestCore.git", from: "0.0.3")
-]
-```
-
-Затем импортируйте оба модуля в вашем коде:
-
+1. **Встроенные моки** (включены, не требуют дополнительных зависимостей):
 ```swift
 import NetworkHealth
-import SpeedTestCore
 
-let networkProvider = NetworkProvider(config: networkConfig)
-
-for await state in NetworkHealth.stream(
-    includeSpeedTests: true,
-    speedTestInterval: 60,
-    networkProvider: networkProvider
-) {
-    print("Скорость: \(state.downloadSpeedMbps ?? 0) Мбит/с")
+let mockTester = MockSpeedTester.goodLTE
+for await state in NetworkHealth.stream(speedTester: mockTester) {
+    print("Качество: \(state.quality)")
 }
 ```
+
+2. **Собственную реализацию** - реализуйте протокол `SpeedTester`:
+```swift
+struct MySpeedTester: SpeedTester {
+    func measureSpeed() async throws -> SpeedTestResult {
+        // Ваша реализация
+    }
+}
+```
+
+3. **Сторонние библиотеки** (опционально) - интегрируйте любую библиотеку для тестирования скорости, создав адаптер. См. примеры в `REFACTORING_SUMMARY.md`.
 
 ## Проверка установки
 
@@ -100,20 +93,21 @@ Task {
 
 ## Минимальные требования
 
-- **iOS**: 15.0 или новее
-- **Swift**: 5.9 или новее
-- **Xcode**: 15.0 или новее
+- **iOS**: 17.0 или новее
+- **macOS**: 15.0 или новее
+- **Swift**: 6.1 или новее
+- **Xcode**: 16.0 или новее
 
 ## Поддержка платформ
 
 Текущая поддержка:
-- ✅ iOS 15.0+
-- ✅ iPadOS 15.0+
+- ✅ iOS 17.0+
+- ✅ iPadOS 17.0+
+- ✅ macOS 15.0+
 
-Планируется:
-- macOS (скоро)
-- watchOS (скоро)
-- tvOS (скоро)
+Планируется в будущем:
+- watchOS (планируется)
+- tvOS (планируется)
 
 ## Решение проблем
 
@@ -131,14 +125,16 @@ Task {
 ### Ошибки сборки после добавления пакета
 
 **Решение**:
-1. Убедитесь, что iOS deployment target вашего проекта установлен на 15.0 или выше
+1. Убедитесь, что deployment target вашего проекта соответствует минимальным требованиям:
+   - iOS 17.0 или выше
+   - macOS 15.0 или выше
 2. Очистите папку сборки (Cmd+Shift+K)
 3. Закройте и откройте Xcode заново
 4. Удалите derived data: `~/Library/Developer/Xcode/DerivedData`
 
 ### Тестирование скорости не работает
 
-**Решение**: Убедитесь, что вы добавили SpeedTestCore как зависимость и импортировали его в вашем коде. Тестирование скорости опционально и требует отдельной установки.
+**Решение**: NetworkHealth включает встроенные mock тестеры скорости. Для production использования реализуйте протокол `SpeedTester` с вашей собственной логикой тестирования. См. документацию для примеров.
 
 ## Обновление NetworkHealth
 

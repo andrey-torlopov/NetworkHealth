@@ -2,19 +2,19 @@ import Foundation
 
 /// Represents the quality of network connection based on type and performance measurements.
 public enum NetworkQuality: Int, Equatable, Sendable, CaseIterable, Codable, Hashable, Comparable {
-    /// Нет соединения или оно не пригодно для передачи данных
+    /// No connection or unusable for data transmission
     case offline = 0
 
-    /// Минимальное: 2G/нестабильный 3G, задержки высокие, подходит только для текста
+    /// Minimum quality: 2G/unstable 3G, high latency, suitable only for text-based content
     case poor = 1
 
-    /// Среднее: стабильный 3G или слабый LTE, можно грузить картинки, но видео тяжело
+    /// Average quality: stable 3G or weak LTE, can load images but video streaming is difficult
     case moderate = 2
 
-    /// Высокое: LTE, 5G или хороший Wi-Fi, подходит для стриминга и больших данных
+    /// High quality: LTE, 5G or good Wi-Fi, suitable for video streaming and large data transfers
     case good = 3
 
-    /// Максимальное: проводной Ethernet, Wi-Fi 6, быстрый 5G, когда реально можно «качать без ограничений»
+    /// Maximum quality: wired Ethernet, Wi-Fi 6, fast 5G - can download without restrictions
     case excellent = 4
 
     /// Human-readable description of the network quality
@@ -97,7 +97,7 @@ public extension NetworkQuality {
         let qualityFromDownloadSpeed = downloadSpeedMbps.map(qualityFrom(downloadSpeedMbps:))
         let qualityFromUploadSpeed = uploadSpeedMbps.map(qualityFrom(uploadSpeedMbps:))
 
-        // Берем худший вариант из всех измерений
+        // Take the worst quality from all measurements
         let qualities = [qualityFromLatency, qualityFromDownloadSpeed, qualityFromUploadSpeed].compactMap { $0 }
         guard !qualities.isEmpty else { return .offline }
 

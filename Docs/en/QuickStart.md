@@ -9,22 +9,27 @@ Get started with NetworkHealth in under 5 minutes.
 Use this when you need to continuously monitor network quality changes in real-time.
 
 ```swift
-// Basic monitoring
+// Basic monitoring (connection type and quality based on type)
 for await state in NetworkHealth.stream() {
     print("Quality: \(state.quality)")
+    print("Connection: \(state.connectionType)")
 }
 
-// With speed testing
+// With speed testing (improves quality accuracy internally)
+let speedTester = MockSpeedTester.goodLTE
 for await state in NetworkHealth.stream(
-    includeSpeedTests: true,
-    speedTestInterval: 60,
-    networkProvider: provider
+    speedTester: speedTester,
+    speedTestInterval: 60
 ) {
-    print("Speed: \(state.downloadSpeedMbps ?? 0) Mbps")
+    print("Quality: \(state.quality)")
+    // Note: Speed metrics are not exposed in stream mode.
+    // Use detailedSnapshot() or observable().performMeasurement() for explicit metrics.
 }
 ```
 
 **When to use**: Background monitoring, reactive UI updates
+
+**Note**: Stream mode focuses on connection type changes. Speed measurements improve quality accuracy but are not directly exposed in the stream.
 
 ---
 
@@ -33,20 +38,23 @@ for await state in NetworkHealth.stream(
 Use this for quick, one-time network quality checks.
 
 ```swift
-// Quick check
+// Quick check (no speed test)
 let snapshot = await NetworkHealth.snapshot()
 if snapshot.isGoodQuality {
     startDownload()
 }
 
 // Detailed check with speed test
+let speedTester = MockSpeedTester.goodLTE
 let detailed = try await NetworkHealth.detailedSnapshot(
-    networkProvider: provider
+    speedTester: speedTester
 )
-print("Ping: \(detailed.latency ?? 0)ms")
+print("Latency: \(detailed.latency ?? 0)ms")
+print("Download: \(detailed.downloadSpeedMbps ?? 0) Mbps")
+print("Upload: \(detailed.uploadSpeedMbps ?? 0) Mbps")
 ```
 
-**When to use**: Pre-flight checks, periodic quality assessment
+**When to use**: Pre-flight checks, periodic quality assessment, explicit speed measurements
 
 ---
 
@@ -164,9 +172,9 @@ state.isOnline            // true if quality != .offline
 state.isGoodQuality       // true if quality >= .good
 state.isDegradedQuality   // true if poor or moderate
 state.isExpensive         // true for cellular with data limits
-state.latency             // Ping in ms (if measured)
-state.downloadSpeedMbps   // Download speed (if measured)
-state.uploadSpeedMbps     // Upload speed (if measured)
+state.latency             // Always nil in stream mode - use detailedSnapshot()
+state.downloadSpeedMbps   // Always nil in stream mode - use detailedSnapshot()
+state.uploadSpeedMbps     // Always nil in stream mode - use detailedSnapshot()
 ```
 
 ---
@@ -198,24 +206,12 @@ state.uploadSpeedMbps     // Upload speed (if measured)
 
 ---
 
-## Migration from NetworkHealthCoordinator
+## Migration from Old API
 
-### Before (Complex):
-
-```swift
-let config = NetworkHealthCoordinator.Configuration(
-    speedTester: adapter,
-    minimumSpeedCheckInterval: 120
-)
-let checker = NetworkHealthCoordinator(configuration: config)
-for await state in await checker.stateStream() {
-    // ...
-}
-```
-
-### After (Simple):
+### Before (Old API - Deprecated):
 
 ```swift
+// Old API with networkProvider parameter
 for await state in NetworkHealth.stream(
     includeSpeedTests: true,
     speedTestInterval: 120,
@@ -224,6 +220,24 @@ for await state in NetworkHealth.stream(
     // ...
 }
 ```
+
+### After (Current API):
+
+```swift
+// New API with speedTester protocol
+let speedTester = MyCustomSpeedTester()  // Or use MockSpeedTester
+for await state in NetworkHealth.stream(
+    speedTester: speedTester,
+    speedTestInterval: 120
+) {
+    // ...
+}
+```
+
+**Key Changes:**
+- Removed `includeSpeedTests` parameter - pass `speedTester` instead
+- Replaced `networkProvider` with `speedTester` (protocol-based)
+- Speed metrics no longer exposed in stream - use `detailedSnapshot()` or `observable().performMeasurement()`
 
 ---
 

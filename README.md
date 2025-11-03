@@ -162,20 +162,38 @@ actor DownloadManager {
 
 ## Speed Testing (Optional)
 
-```swift
-import SpeedTestCore
+NetworkHealth supports optional speed testing through the `SpeedTester` protocol. You can inject any speed testing implementation:
 
-// Stream with automatic speed tests
+```swift
+// Use a mock tester for development/testing
+let mockTester = MockSpeedTester.goodLTE
+
+// Stream with automatic speed tests (improves quality accuracy)
 for await state in NetworkHealth.stream(
-    includeSpeedTests: true,
-    speedTestInterval: 60,
-    networkProvider: myNetworkProvider
+    speedTester: mockTester,
+    speedTestInterval: 60
 ) {
-    if let speed = state.downloadSpeedMbps {
-        print("Download speed: \(speed) Mbps")
-    }
+    print("Quality: \(state.quality)")  // Quality considers speed measurements
+    
+    // Note: For explicit speed metrics, use detailedSnapshot() or observable()
 }
+
+// Get detailed speed measurements
+let speedTester = MyCustomSpeedTester()
+let snapshot = try await NetworkHealth.detailedSnapshot(speedTester: speedTester)
+print("Download: \(snapshot.downloadSpeedMbps ?? 0) Mbps")
+print("Upload: \(snapshot.uploadSpeedMbps ?? 0) Mbps")
+print("Latency: \(snapshot.latency ?? 0) ms")
 ```
+
+### Available Mock Testers
+
+NetworkHealth includes built-in mocks for testing:
+- `MockSpeedTester.excellent5G` - 100 Mbps download
+- `MockSpeedTester.goodLTE` - 20 Mbps download
+- `MockSpeedTester.moderate3G` - 3 Mbps download
+- `MockSpeedTester.poor2G` - 0.3 Mbps download
+- `MockSpeedTester.excellentWiFi` - 150 Mbps download
 
 ## Documentation
 
@@ -185,9 +203,9 @@ for await state in NetworkHealth.stream(
 
 ## Requirements
 
-- iOS 15.0+
-- Swift 5.9+
-- Xcode 15.0+
+- iOS 17.0+ / macOS 15.0+
+- Swift 6.1+
+- Xcode 16.0+
 
 ## License
 

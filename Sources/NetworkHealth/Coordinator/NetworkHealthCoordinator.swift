@@ -6,6 +6,45 @@ import Network
 ///
 /// This is the main entry point for network quality checking functionality.
 /// It acts as a coordinator between NetworkMonitor, QualityEvaluator, and SpeedTester components.
+///
+/// ## Thread Safety
+/// NetworkHealthCoordinator is an actor, ensuring all methods are thread-safe.
+/// All public methods can be safely called from any isolation context (main actor, background tasks, etc.).
+///
+/// ## Lifecycle
+/// The coordinator automatically starts monitoring network path changes on initialization.
+/// Resources are automatically cleaned up on deallocation, but you can explicitly call
+/// `stopMonitoring()` to release resources earlier if needed.
+///
+/// ## Usage Patterns
+///
+/// ### Basic Monitoring (No Speed Tests)
+/// ```swift
+/// let coordinator = NetworkHealthCoordinator()
+/// for await state in await coordinator.stateStream() {
+///     print("Quality: \(state.quality)")
+/// }
+/// await coordinator.stopMonitoring()
+/// ```
+///
+/// ### With Speed Testing
+/// ```swift
+/// let coordinator = NetworkHealthCoordinator.custom(
+///     speedTester: mySpeedTester,
+///     interval: 120
+/// )
+/// for await state in await coordinator.stateStream() {
+///     print("Quality: \(state.quality)")
+/// }
+/// ```
+///
+/// ### One-Time Measurement
+/// ```swift
+/// let coordinator = NetworkHealthCoordinator.custom(speedTester: myTester)
+/// let snapshot = try await coordinator.performDetailedMeasurement()
+/// print("Download: \(snapshot.downloadSpeedMbps ?? 0) Mbps")
+/// await coordinator.stopMonitoring()
+/// ```
 public actor NetworkHealthCoordinator {
 
     // MARK: - Internal Properties

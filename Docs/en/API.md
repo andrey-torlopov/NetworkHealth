@@ -24,18 +24,18 @@ Continuous monitoring with AsyncStream.
 
 ```swift
 static func stream(
-    includeSpeedTests: Bool = false,
-    speedTestInterval: TimeInterval = 120,
-    networkProvider: NetworkProvider? = nil
+    speedTester: (any SpeedTester)? = nil,
+    speedTestInterval: TimeInterval = 120
 ) -> AsyncStream<NetworkHealthState>
 ```
 
 **Parameters:**
-- `includeSpeedTests`: Enable automatic speed testing (default: false)
+- `speedTester`: Optional speed tester implementation (default: nil, no speed tests)
 - `speedTestInterval`: Interval between speed tests in seconds (default: 120)
-- `networkProvider`: Network provider for speed testing (required if includeSpeedTests is true)
 
 **Returns:** AsyncStream that emits NetworkHealthState on network changes
+
+**Note:** Stream mode monitors connection type changes and provides quality assessment. When a speed tester is provided, measurements are performed internally to improve quality accuracy, but speed metrics are NOT exposed in the stream. Use `detailedSnapshot()` or `observable().performMeasurement()` for explicit speed metrics.
 
 **Example:**
 ```swift
@@ -70,14 +70,14 @@ if snapshot.isOnline {
 
 ```swift
 static func detailedSnapshot(
-    networkProvider: NetworkProvider
+    speedTester: any SpeedTester
 ) async throws -> NetworkQualitySnapshot
 ```
 
 Performs speed test and returns detailed snapshot.
 
 **Parameters:**
-- `networkProvider`: Network provider for speed testing
+- `speedTester`: Speed tester implementation to use for measurements
 
 **Returns:** Detailed snapshot with speed measurements
 
@@ -88,10 +88,13 @@ Performs speed test and returns detailed snapshot.
 **Example:**
 ```swift
 do {
+    let speedTester = MockSpeedTester.goodLTE
     let snapshot = try await NetworkHealth.detailedSnapshot(
-        networkProvider: provider
+        speedTester: speedTester
     )
     print("Download: \(snapshot.downloadSpeedMbps ?? 0) Mbps")
+    print("Upload: \(snapshot.uploadSpeedMbps ?? 0) Mbps")
+    print("Latency: \(snapshot.latency ?? 0) ms")
 } catch {
     print("Failed: \(error)")
 }
@@ -105,16 +108,14 @@ Observable wrapper for SwiftUI/UIKit.
 
 ```swift
 static func observable(
-    includeSpeedTests: Bool = false,
-    speedTestInterval: TimeInterval = 120,
-    networkProvider: NetworkProvider? = nil
+    speedTester: (any SpeedTester)? = nil,
+    speedTestInterval: TimeInterval = 120
 ) -> NetworkQualityMonitor
 ```
 
 **Parameters:**
-- `includeSpeedTests`: Enable automatic speed testing (default: false)
+- `speedTester`: Optional speed tester implementation (default: nil, no speed tests)
 - `speedTestInterval`: Interval between speed tests in seconds (default: 120)
-- `networkProvider`: Network provider for speed testing
 
 **Returns:** Observable NetworkQualityMonitor instance
 
@@ -271,17 +272,20 @@ Connection type information.
 
 ```swift
 public enum ConnectionRawData: Equatable, Sendable {
+    case none
     case wifi
     case wiredEthernet
     case cellular(CellularType)
-    case unknown
+    case loopback
+    case other
 }
 
 public enum CellularType: String, Sendable {
-    case twoG = "2G"
-    case threeG = "3G"
-    case lte = "LTE"
-    case fiveG = "5G"
+    case twoG
+    case threeG
+    case lte
+    case fiveG
+    case other
     case unknown
 }
 ```
@@ -429,9 +433,8 @@ Performs speed test and updates measurements.
 ```swift
 struct NetworkView: View {
     @State private var health = NetworkHealth.observable(
-        includeSpeedTests: true,
-        speedTestInterval: 60,
-        networkProvider: provider
+        speedTester: MockSpeedTester.goodLTE,
+        speedTestInterval: 60
     )
     
     var body: some View {

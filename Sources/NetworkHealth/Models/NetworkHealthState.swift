@@ -41,8 +41,9 @@ public struct NetworkHealthState: Sendable, Equatable {
         self.quality = state.quality
         self.isExpensive = state.isExpensive
 
-        // These would need to be exposed from checker if we want them
-        // For now, they're nil in basic streaming mode
+        // Note: Speed metrics are intentionally not exposed in stream mode for performance reasons.
+        // Stream mode focuses on real-time connection type changes and quality assessment.
+        // For explicit speed measurements, use detailedSnapshot() or observable().performMeasurement().
         self.latency = nil
         self.downloadSpeedMbps = nil
         self.uploadSpeedMbps = nil

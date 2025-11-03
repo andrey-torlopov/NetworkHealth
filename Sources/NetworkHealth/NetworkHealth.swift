@@ -27,6 +27,12 @@ public enum NetworkHealth {
     /// Creates an AsyncStream that continuously monitors network quality.
     /// This is the simplest way to track network changes in real-time.
     ///
+    /// **Note:** Stream mode monitors connection type changes (WiFi, LTE, 5G, etc.) and determines
+    /// quality based on the connection type. Speed measurements are performed internally when a speed
+    /// tester is provided, but are NOT directly exposed in the stream. Use `detailedSnapshot()` for
+    /// one-time measurements with explicit speed metrics, or `observable()` with `performMeasurement()`
+    /// to get speed test results.
+    ///
     /// - Parameters:
     ///   - speedTester: Optional speed tester implementation (default: nil, no speed tests)
     ///   - speedTestInterval: Minimum interval between speed tests in seconds (default: 120)
@@ -34,21 +40,24 @@ public enum NetworkHealth {
     ///
     /// Example:
     /// ```swift
-    /// // Basic monitoring (no speed tests)
+    /// // Basic monitoring (connection type and quality based on type)
     /// for await state in NetworkHealth.stream() {
     ///     print("Quality: \(state.quality)")
     ///     print("Connection: \(state.connectionType)")
+    ///     print("Is expensive: \(state.isExpensive)")
     /// }
     ///
-    /// // With speed testing (inject any SpeedTester implementation)
+    /// // With speed testing (improves quality accuracy internally)
     /// let myTester = MyCustomSpeedTester()
     /// for await state in NetworkHealth.stream(
     ///     speedTester: myTester,
     ///     speedTestInterval: 60
     /// ) {
-    ///     if let speed = state.downloadSpeedMbps {
-    ///         print("Download: \(speed) Mbps")
-    ///     }
+    ///     // Quality now considers actual speed measurements
+    ///     print("Quality: \(state.quality)")
+    ///
+    ///     // Note: Speed metrics are not available in stream mode.
+    ///     // Use detailedSnapshot() or observable().performMeasurement() for explicit metrics.
     /// }
     /// ```
     public static func stream(
@@ -258,16 +267,5 @@ public enum NetworkHealth {
         } else {
             return NetworkHealthCoordinator()
         }
-    }
-}
-
-// MARK: - ConnectionRawData Extensions
-
-extension ConnectionRawData {
-    var isCellular: Bool {
-        if case .cellular = self {
-            return true
-        }
-        return false
     }
 }

@@ -5,8 +5,14 @@ import Network
 
 extension NetworkHealthCoordinator {
 
-    /// Forces a speed measurement immediately, ignoring the throttling interval.
-    /// If no speed tester was provided, the call is ignored.
+    /// Forces an immediate quality refresh by performing a speed test, ignoring the throttling interval.
+    ///
+    /// If a speed tester was configured, this method triggers an immediate measurement and updates
+    /// the quality assessment based on the results. If no speed tester is configured, this method
+    /// resets any cached measurements and re-evaluates quality based on connection type only.
+    ///
+    /// This is useful when you want to get fresh quality data immediately without waiting for
+    /// the next scheduled measurement.
     public func refreshQuality() {
         guard let path = currentPath, path.status == .satisfied else { return }
         measuredQuality = nil

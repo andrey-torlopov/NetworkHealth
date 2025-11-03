@@ -28,3 +28,32 @@ public enum CellularType: String, Equatable, Sendable, Codable, Hashable {
     case unknown
 }
 
+// MARK: - ConnectionRawData Extensions
+
+public extension ConnectionRawData {
+    /// Returns true if the connection is a cellular connection (any type)
+    var isCellular: Bool {
+        if case .cellular = self {
+            return true
+        }
+        return false
+    }
+
+    /// Human-readable description of the connection type
+    var description: String {
+        switch self {
+        case .none:
+            return "none"
+        case .wifi:
+            return "wifi"
+        case .cellular(let type):
+            return "cellular(\(type.rawValue))"
+        case .wiredEthernet:
+            return "ethernet"
+        case .loopback:
+            return "loopback"
+        case .other:
+            return "other"
+        }
+    }
+}

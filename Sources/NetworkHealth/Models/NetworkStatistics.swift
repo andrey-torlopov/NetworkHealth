@@ -181,16 +181,3 @@ private extension Array where Element == Double {
         }
     }
 }
-
-public extension ConnectionRawData {
-    var description: String {
-        switch self {
-        case .none: return "none"
-        case .wifi: return "wifi"
-        case .cellular(let type): return "cellular(\(type.rawValue))"
-        case .wiredEthernet: return "ethernet"
-        case .loopback: return "loopback"
-        case .other: return "other"
-        }
-    }
-}

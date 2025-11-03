@@ -69,7 +69,7 @@ public actor NetworkMonitor {
     private func setup() {
         monitor.setPathUpdateHandler { [weak self] path in
             guard let self else { return }
-            Task { @MainActor in
+            Task {
                 await self.handlePathUpdate(path)
             }
         }

@@ -21,16 +21,17 @@ NetworkHealth is distributed via Swift Package Manager. This is the recommended 
 Add NetworkHealth as a dependency in your `Package.swift` file:
 
 ```swift
-// swift-tools-version: 5.9
+// swift-tools-version: 6.1
 import PackageDescription
 
 let package = Package(
     name: "YourPackage",
     platforms: [
-        .iOS(.v15)
+        .iOS(.v17),
+        .macOS(.v15)
     ],
     dependencies: [
-        .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1")
+        .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "1.0.0")
     ],
     targets: [
         .target(
@@ -43,45 +44,37 @@ let package = Package(
 
 ## Dependencies
 
-NetworkHealth has the following dependencies that will be automatically installed:
+NetworkHealth has **ZERO external dependencies**! It's a completely standalone library.
 
-### Required Dependencies
+### Built-in Dependencies
 - **Foundation** - Built-in framework (no external dependency)
 - **Network** - Built-in framework for NWPathMonitor (no external dependency)
+- **CoreTelephony** - Built-in framework for cellular type detection (iOS only)
 
-### Optional Dependencies
-If you want to use speed testing features:
+### Optional Speed Testing
 
-- **SpeedTestCore** - For network speed measurements
-- **Nevod** (Core) - Network provider layer
+NetworkHealth supports speed testing through the `SpeedTester` protocol. You can use:
 
-## Installation for Speed Testing
-
-If you want to enable speed testing capabilities, you need to include SpeedTestCore:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/yourusername/NetworkHealth.git", from: "0.0.1"),
-    .package(url: "https://github.com/yourusername/SpeedTestCore.git", from: "0.0.3")
-]
-```
-
-Then import both in your code:
-
+1. **Built-in Mocks** (included, no extra dependencies):
 ```swift
 import NetworkHealth
-import SpeedTestCore
 
-let networkProvider = NetworkProvider(config: networkConfig)
-
-for await state in NetworkHealth.stream(
-    includeSpeedTests: true,
-    speedTestInterval: 60,
-    networkProvider: networkProvider
-) {
-    print("Speed: \(state.downloadSpeedMbps ?? 0) Mbps")
+let mockTester = MockSpeedTester.goodLTE
+for await state in NetworkHealth.stream(speedTester: mockTester) {
+    print("Quality: \(state.quality)")
 }
 ```
+
+2. **Your Own Implementation** - implement the `SpeedTester` protocol:
+```swift
+struct MySpeedTester: SpeedTester {
+    func measureSpeed() async throws -> SpeedTestResult {
+        // Your implementation
+    }
+}
+```
+
+3. **Third-party Libraries** (optional) - integrate any speed testing library by creating an adapter. See `REFACTORING_SUMMARY.md` for examples.
 
 ## Verifying Installation
 
@@ -100,20 +93,21 @@ Task {
 
 ## Minimum Requirements
 
-- **iOS**: 15.0 or later
-- **Swift**: 5.9 or later
-- **Xcode**: 15.0 or later
+- **iOS**: 17.0 or later
+- **macOS**: 15.0 or later
+- **Swift**: 6.1 or later
+- **Xcode**: 16.0 or later
 
 ## Platform Support
 
 Currently supported platforms:
-- ✅ iOS 15.0+
-- ✅ iPadOS 15.0+
+- ✅ iOS 17.0+
+- ✅ iPadOS 17.0+
+- ✅ macOS 15.0+
 
-Planned support:
-- macOS (coming soon)
-- watchOS (coming soon)
-- tvOS (coming soon)
+Future support (planned):
+- watchOS (planned)
+- tvOS (planned)
 
 ## Troubleshooting
 
@@ -131,14 +125,16 @@ Planned support:
 ### Build Errors After Adding Package
 
 **Solution**:
-1. Ensure your project's iOS deployment target is 15.0 or higher
+1. Ensure your project's deployment target meets minimum requirements:
+   - iOS 17.0 or higher
+   - macOS 15.0 or higher
 2. Clean build folder (Cmd+Shift+K)
 3. Close and reopen Xcode
 4. Delete derived data: `~/Library/Developer/Xcode/DerivedData`
 
 ### Speed Testing Not Working
 
-**Solution**: Make sure you've added SpeedTestCore as a dependency and imported it in your code. Speed testing is optional and requires separate installation.
+**Solution**: NetworkHealth includes built-in mock speed testers. For production use, implement the `SpeedTester` protocol with your own speed testing logic. See the documentation for examples.
 
 ## Updating NetworkHealth
 

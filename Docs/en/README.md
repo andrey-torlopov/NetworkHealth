@@ -106,9 +106,9 @@ if await NetworkHealth.isGoodEnoughFor(.videoStreaming) {
 
 ## Requirements
 
-- iOS 15.0+
-- Swift 5.9+
-- Xcode 15.0+
+- iOS 17.0+ / macOS 15.0+
+- Swift 6.1+
+- Xcode 16.0+
 
 ## Support
 

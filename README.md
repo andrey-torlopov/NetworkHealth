@@ -214,3 +214,7 @@ NetworkHealth is available under the MIT license. See the LICENSE file for more 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## ☕ Buy me a coffee
+
+If you find this project useful, you can [support my work on Boosty](https://boosty.to/andreytorlopov).
